@@ -36,10 +36,13 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    const lib = b.addStaticLibrary(.{
+    const lib = b.addLibrary(.{
         .name = "ffmpeg",
-        .target = target,
-        .optimize = optimize,
+        .linkage = .static,
+        .root_module = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+        }),
     });
     lib.linkLibrary(libz_dep.artifact("z"));
     if (lazy_mbedtls_dep) |mbedtls_dep| lib.linkLibrary(mbedtls_dep.artifact("mbedtls"));
@@ -3173,8 +3176,10 @@ pub fn build(b: *std.Build) void {
 
     const show_metadata_c = b.addExecutable(.{
         .name = "show_metadata_c",
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .target = target,
+            .optimize = optimize,
+        }),
     });
     show_metadata_c.addCSourceFiles(.{
         .files = &.{"doc/examples/show_metadata.c"},
@@ -3184,9 +3189,11 @@ pub fn build(b: *std.Build) void {
 
     const show_metadata_zig = b.addExecutable(.{
         .name = "show_metadata_zig",
-        .root_source_file = b.path("doc/examples/show_metadata.zig"),
-        .target = target,
-        .optimize = optimize,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("doc/examples/show_metadata.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
     });
     show_metadata_zig.root_module.addImport("av", bindings);
     b.installArtifact(show_metadata_zig);
@@ -3452,7 +3459,7 @@ const ffmpeg_cflags: []const []const u8 = &.{
     "-D_LARGEFILE_SOURCE",
     "-D_POSIX_C_SOURCE=200112",
     "-D_XOPEN_SOURCE=600",
-    "-D_DARWIN_C_SOURCE",
+    // "-D_DARWIN_C_SOURCE",
     "-DZLIB_CONST",
     "-DHAVE_AV_CONFIG_H",
     "-std=c11",
