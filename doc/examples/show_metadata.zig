@@ -29,6 +29,6 @@ pub fn main() !void {
 
     var it: ?*const av.Dictionary.Entry = null;
     while (fc.metadata.iterate(it)) |tag| : (it = tag) {
-        try std.io.getStdOut().writer().print("{s}={s}\n", .{ tag.key, tag.value });
+        std.debug.print("{s}={s}\n", .{ tag.key, tag.value });
     }
 }
